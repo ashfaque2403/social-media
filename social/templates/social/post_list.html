@@ -1,0 +1,85 @@
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<div class="container">
+    {% if user.is_authenticated %}
+        {% if  not user.profile.name %}
+            <a  href="{% url "profile-edit" request.user.profile.pk%}">
+                <button style="background-color: #007bff; color: #fff; border: none; padding: 10px 20px; cursor: pointer; text-decoration:none">Complete the Profile</button>
+            </a>
+          
+            
+
+    {% endif %}
+{% endif %}
+
+
+    <div class="row justify-content-center mt-3">
+        <div class="col-md-5 col-sm-12 border-bottom" style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); margin: 2px; border-radius: 5px; padding:2px 3px;">
+            <h5 style="font-weight: bold;">Add a Post</h5>
+        </div>
+    </div>
+    <div class="row justify-content-center mt-3">
+        <div class="col-md-5 col-sm-12 border-bottom" style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); margin: 2px; border-radius: 5px; padding:4px 3px;">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{form | crispy}}
+                <div class="d-grid gap-2">
+                    <button class="btn btn-success mt-3">
+                        Post
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% for post in post_list %}
+    <div class="row justify-content-center mt-3">
+        <div class="col-md-5 col-sm-12 border-bottom" style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); margin: 2px; border-radius: 5px; background-color:#f3f3f3">
+            <p><a href="{% url 'profile' post.author.profile.pk %}" style="font-weight: bold; text-decoration:none;" class="text-dark">@{{ post.author }}</a>, {{ post.created_on }}</p>
+            <div class="position-relative">
+                {% if post.image %}
+                <img src="{{ post.image.url }}" class="post-image" style="max-width: 100%; height:auto; border-radius:10px; margin-bottom:10px">
+                {% endif %}
+                <p>{{ post.body }}</p>
+                <a href="{% url 'post-detail' post.pk %}" class="stretched-link"></a>
+            </div>
+
+            <div class="d-flex flex-row">
+                <form method="post" action="{% url 'likes' post.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.path}}">
+                    <button style="background-color: transparent; border: none; box-shadow: none;" type="submit">
+                        {% if not request.user.is_likes %}
+                        <i class="far fa-thumbs-up"></i><span>{{ post.likes.all.count }}</span>
+                        {% else %}
+                        <i class="fas fa-thumbs-up"></i><span>{{ post.likes.all.count }}</span>
+                        {% endif %}
+                    </button>
+                    
+                </form>
+                
+
+                <form method="post" action="{% url 'dislike' post.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.path}}">
+                    <button style="background-color: transparent; border: none; box-shadow: none;" type="submit">
+                        <i class="fas fa-thumbs-down"></i><span>{{ post.dislikes.all.count }}</span>
+                    </button>
+                </form>
+
+                <form method="post" action="{% url 'post-detail' post.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <button style="background-color: transparent; border: none; box-shadow: none;" type="submit">
+                        <i class="fas fa-comment"></i><span>{{ post.comment.all.count }}</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
